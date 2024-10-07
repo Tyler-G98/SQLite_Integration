@@ -7,6 +7,27 @@ internal class Program
     static void Main(string[] args)
     {
         string connectionString = "Data Source=database.db";
+        using(var connection = new SQLiteConnection(connectionString))
+        {
+            connection.Open();
+
+            TableBuilder tablePerson = new TableBuilder("person");
+            tablePerson.AddColumn("id", "INTEGER PRIMARY KEY");
+            tablePerson.AddColumn("name", "TEXT NOT NULL");
+            tablePerson.AddColumn("age", "INTEGER");
+
+            tablePerson.CreateTable(connection);
+
+            connection.Close();
+        }
+    }
+
+    /// <summary>
+    /// Method for testing SQLite
+    /// </summary>
+    private void sqlTest()
+    {
+        string connectionString = "Data Source=database.db";
         var connection = new SQLiteConnection(connectionString);
 
         connection.Open();
@@ -34,7 +55,7 @@ internal class Program
         query = "SELECT * FROM person";
         command = new SQLiteCommand(query, connection);
         var reader = command.ExecuteReader();
-        while(reader.Read())
+        while (reader.Read())
         {
             Console.WriteLine(reader["name"] + " " + reader["age"]);
         }
@@ -52,5 +73,4 @@ internal class Program
         }
     }
 }
-
 

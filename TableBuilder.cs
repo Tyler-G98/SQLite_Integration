@@ -29,7 +29,7 @@ namespace SQLite_Integration
             columns.Add((columnName, columnType));
         }
 
-        public string BuildCreateTableQuery()
+        private string BuildCreateTableQuery()
         {
             if ((columns.Count == 0) || string.IsNullOrEmpty(_tableName))
             {
