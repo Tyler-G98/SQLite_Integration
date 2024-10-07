@@ -22,6 +22,7 @@ internal class Program
         }
     }
 
+
     /// <summary>
     /// Method for testing SQLite
     /// </summary>

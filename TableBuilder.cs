@@ -29,14 +29,39 @@ namespace SQLite_Integration
             columns.Add((columnName, columnType));
         }
 
+        public void CreateTable(SQLiteConnection connection)
+        {
+            try
+            {
+                if (TableExists(connection))
+                {
+                    Console.WriteLine($"Table '{_tableName}' already exists.");
+                }
+                else
+                {
+                    string query = BuildCreateTableQuery();
+                    using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                    {
+                        command.ExecuteNonQuery();
+                        Console.WriteLine($"Table '{_tableName}' created successfully!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while creating the table: {ex.Message}");
+            }
+        }
+
+        #region Private Methods
         private string BuildCreateTableQuery()
         {
-            if ((columns.Count == 0) || string.IsNullOrEmpty(_tableName))
+            if (columns.Count == 0)
             {
-                throw new InvalidOperationException("Table name and columns must be set before building the query");
+                throw new InvalidOperationException("Table must have at least one column.");
             }
 
-            string query = $"CREATE TABLE {_tableName} (";
+            string query = $"CREATE TABLE IF NOT EXISTS {_tableName} (";
             for (int i = 0; i < columns.Count; i++)
             {
                 query += $"{columns[i].columnName} {columns[i].columnType}";
@@ -45,16 +70,23 @@ namespace SQLite_Integration
                     query += ", ";
                 }
             }
-
-            query += ")";
+            query += ");";
             return query;
         }
 
-        public void CreateTable(SQLiteConnection connection)
+        private bool TableExists(SQLiteConnection connection)
         {
-            string query = BuildCreateTableQuery();
-            var command = new SQLiteCommand(query, connection);
-            command.ExecuteNonQuery();
+            string query = "SELECT name FROM sqlite_master WHERE type='table' AND name=@_tableName;";
+            using (SQLiteCommand command = new SQLiteCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@_tableName", _tableName);
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    return reader.HasRows;
+                }
+            }
         }
+        #endregion
+
     }
 }
